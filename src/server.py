@@ -62,8 +62,6 @@ def handle_clients(client_socket, address):
             raise ValueError("File Path not found.")
         print(f'This is the path contained in config file: {path}')
 
-        
-
 
         connected = True
         while connected:
@@ -77,17 +75,21 @@ def handle_clients(client_socket, address):
                 message_length = int(message_header.strip())
             except ValueError:
                 print(f"Invalid message header from {address}:{message_header}")
-                break
+                continue
             message = client_socket.recv(message_length).decode(FORMAT)
-            print(f'[Received message:] {message_length} : {message}')
+            print(f'[Received string from Client {address}:] {message_length} : {message}')
 
 
             # Search for the match in the file using the received search query
             string_match = find_string_match(message)
             if string_match:
                 print(string_match)
-
-            # Send acknowledgment to client
+            
+            # Code to send the string match to client
+            string_length = len(string_match)
+            send_length = str(string_length).encode(FORMAT)
+            send_length += b'\n' * (HEADERSIZE - len(send_length))
+            client_socket.send(send_length)
             client_socket.send(string_match.encode(FORMAT))
 
     except Exception as e:
@@ -99,6 +101,7 @@ def handle_clients(client_socket, address):
 
 def start_server():
     server_socket.listen()
+    print(f'Server is listening at {SERVER}')
     while True:
         client_socket, address = server_socket.accept()
         thread = threading.Thread(
@@ -108,6 +111,5 @@ def start_server():
 
 if __name__ == '__main__':
 
-    
-    print(f'Server is listening at {SERVER}')
+
     start_server()
