@@ -3,35 +3,4 @@ New
 Hello world!
 Welcome to this world
 hello there 
-
-
-Write a server script that binds a port and responds to connections (an unlimited amount of concurrent connections),
-
-Receives "String" in the connection in clear text
-he path to find the file comes from the configuration file. The configuration file can have a large number of elements that are not relevant to your server script. The line with the path in it will start with “linuxpath=” and will have the path after it, for example “linuxpath=/root/200k.txt”.
-
-Opens the file found in the path, and searches for a full match of the string in the file. Please note: partial matches of the search query string in a line do not count as matches. You should only respond with STRING EXISTS if you can find a match for the whole string as a stand-alone line in the file.
-
-REREAD_ON_QUERY option: When set to True, this checks whether "String" exists in the file, considering that the file in the path COULD change every few microseconds. In this case the code should re-read the contents of the file on every search query sent from the client. When the option is set to False, the file is not expected to change and it’s enough to read it one time, on load. 
-
-The maximum payload size is 1024 bytes. The server strips any \x00 characters from the end of the payload it receives,
-
-Responds on the TCP port saying "STRING EXISTS" or "STRING NOT FOUND" (with a newline character at the end).
-
-Uses multithreading to accept a large amount of requests in parallel,
-\
-Write a server script that binds a port and responds to connections (an unlimited amount of concurrent connections),
-
-Receives "String" in the connection in clear text,
-
-The path to find the file comes from the configuration file. The configuration file can have a large number of elements that are not relevant to your server script. The line with the path in it will start with “linuxpath=” and will have the path after it, for example “linuxpath=/root/200k.txt”.
-
-Opens the file found in the path, and searches for a full match of the string in the file. Please note: partial matches of the search query string in a line do not count as matches. You should only respond with STRING EXISTS if you can find a match for the whole string as a stand-alone line in the file.
-
-REREAD_ON_QUERY option: When set to True, this checks whether "String" exists in the file, considering that the file in the path COULD change every few microseconds. In this case the code should re-read the contents of the file on every search query sent from the client. When the option is set to False, the file is not expected to change and it’s enough to read it one time, on load. 
-
-The maximum payload size is 1024 bytes. The server strips any \x00 characters from the end of the payload it receives,
-
-Responds on the TCP port saying "STRING EXISTS" or "STRING NOT FOUND" (with a newline character at the end).
-
-Uses multithreading to accept a large amount of requests in parallel,
+REREAD_ON_QUERY
