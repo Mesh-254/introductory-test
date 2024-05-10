@@ -44,6 +44,9 @@ This README provides an overview of the features, functionalities, and instructi
 5. Modify the `config.ini` file to configure server settings, including the path to the file to search and the `REREAD_ON_QUERY` option.
 
 6. Run the client script (`client.py`) for testing purposes to send queries to the server.
+ ```bash
+    python client.py
+    ```
 
 ## Security
 
