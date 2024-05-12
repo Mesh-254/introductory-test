@@ -1,12 +1,18 @@
 [Unit]
 Description=introductory_test.service
-After=network.target
+
 
 [Service]
 Type=simple
+User=root
+Group=root
 ExecStart=/usr/bin/python3 /home/frosty/projects/introductory-test/src/server.py
-WorkingDirectory=/home/frosty/projects/introductory-test/src
+WorkingDirectory=/tmp
 Restart=always
+Nice=19
+LimitNOFILE=16384
+StandardOutput=file:/home/frosty/projects/introductory-test/logs/serveroutput.log
+StandardError=file:/home/frosty/projects/introductory-test/logs/server.log
 
 
 [Install]
