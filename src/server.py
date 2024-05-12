@@ -1,20 +1,33 @@
+#!/usr/bin/env python3
+
 import socket
 import threading
 import sys
 import time
+import ssl
+from typing import Tuple
+
 
 FORMAT = 'UTF-8'
 HEADERSIZE = 1024
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_socket.bind((SERVER, PORT))
+# SSL configuration
+# USE_SSL = True  # Set to False to disable SSL (for testing)
+# SSL_CERTFILE = './ssl_certs/certchain.pem'
+# SSL_KEYFILE = './ssl_certs/private.key'
 
 
-# function to read the config file
-def read_config():
+def read_config() -> str:
+    """
+    Reads the configuration file to get the path.
+
+    Returns:
+        str: The file path specified in the configuration.
+    Raises:
+        FileNotFoundError: If the configuration file is not found.
+    """
     try:
         with open('./config.ini', 'r') as f:
             for data in f:
@@ -26,9 +39,22 @@ def read_config():
         print("Error accessing config file : ", str(e), "\n")
         sys.exit()
 
-
 # function to read contents found in file returned from read_config function
-def fetch_file_data(file_path):
+
+
+def fetch_file_data(file_path: str) -> str:
+    """
+    Reads and fetches contents from the specified file path.
+
+    Args:
+        file_path (str): The path to the file.
+
+    Returns:
+        str: The contents of the file.
+    Raises:
+        FileNotFoundError: If the specified file is not found.
+        Exception: If an error occurs while reading the file.
+    """
     try:
         with open(file_path, 'r') as f:
             file_data = f.read()
@@ -41,26 +67,28 @@ def fetch_file_data(file_path):
         sys.exit()
 
 
-# function to search full match of a string contained in file
-def find_string_match(message, REREAD_ON_QUERY=False):
+# Function to search full match of a string contained in file
+def find_string_match(
+        message: str, REREAD_ON_QUERY: bool = True) -> Tuple[str, float, str]:
     """
     Searches for a full match of a string in a file.
 
     Args:
-        file_path (str): The path to the file to search.
-        search_string (str): The string to search for.
+        message (str): The string to search for.
+        REREAD_ON_QUERY (bool): Whether to re-read the file on every query.
 
     Returns:
-        bool: True if the string is found, False otherwise AND TIME TAKEN TO find match.
+        tuple: A tuple containing the search result,
+        time taken to find the match,
+               and the current timestamp.
     """
-
     file_path = read_config()
 
     if REREAD_ON_QUERY:
-        # get file content and store it in memory
+        # Get file content and store it in memory
         file_data = fetch_file_data(file_path)
     else:
-        # use global variable which contains data from last search
+        # Use global variable which contains data from last search
         if 'file_data' not in globals():
             file_data = fetch_file_data(file_path)
         file_data = file_data
@@ -73,18 +101,40 @@ def find_string_match(message, REREAD_ON_QUERY=False):
             time_taken = end_time - start_time  # Calculate the time taken
             current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
             return 'STRING EXISTS\n', time_taken, current_time
- 
+
     end_time = time.time()  # Record the end time
     time_taken = end_time - start_time  # Calculate the time taken
-    current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())  # time stamp
+    current_time = time.strftime(
+        '%Y-%m-%d %H:%M:%S',
+        time.localtime())  # Time stamp
     return 'STRING NOT FOUND\n', time_taken, current_time
 
+# Function to handle client connections
 
-def handle_clients(client_socket, address):
+
+def handle_clients(client_socket: socket.socket, address: tuple) -> None:
+    """
+    Handles client connections and communication.
+
+    Args:
+        client_socket (socket.socket): The client socket.
+        address (tuple): The address of the client.
+
+    Returns:
+        None
+    """
     try:
         print(f'Server established new connection from {address}')
 
-        # send linux path to client for config file
+        # Wrap client socket with SSL if enabled
+        # if USE_SSL:
+        #     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        #     context.load_cert_chain(SSL_CERTFILE, SSL_KEYFILE)
+        #     ssl_socket = context.wrap_socket(client_socket, server_side=True)
+        # else:
+        #     ssl_socket = client_socket
+
+        # Send linux path to client for config file
         path = read_config()
         if path is None:
             raise ValueError("File Path not found.")
@@ -116,10 +166,12 @@ def handle_clients(client_socket, address):
 
                 print(current_time)
 
-                if time_taken < 1:  # If time taken is less than 1 second, consider it as milliseconds
+                # If time taken is less than 1 second, consider it as
+                # milliseconds
+                if time_taken < 1:
                     time_taken_milliseconds = time_taken * 1000
-                    print(f'Time taken: {
-                          time_taken_milliseconds} milliseconds')
+                    print(
+                        f'Time taken: {time_taken_milliseconds} milliseconds')
                 else:
                     print(f'Time taken: {time_taken} seconds')
 
@@ -135,13 +187,25 @@ def handle_clients(client_socket, address):
         sys.exit()
 
 
-def start_server():
+def start_server() -> None:
+    """
+    Starts the server and listens for client connections.
+
+    Returns:
+        None
+    """
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind((SERVER, PORT))
     server_socket.listen()
     print(f'Server is listening at {SERVER}')
     while True:
         client_socket, address = server_socket.accept()
+
+        # Start a new thread to handle the client
         thread = threading.Thread(
-            target=handle_clients, args=(client_socket, address))
+            target=handle_clients, args=(
+                client_socket, address))
         thread.start()
         print(f'[active connections:]{threading.active_count() - 1}')
 
