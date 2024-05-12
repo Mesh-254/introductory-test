@@ -7,7 +7,10 @@ FORMAT = 'UTF-8'  # Setting the encoding format for communication
 HEADERSIZE = 1024  # Setting the header size for messages
 PORT = 5050  # Setting the port number for the server
 # Getting the server IP address
-SERVER = socket.gethostbyname(socket.gethostname())
+SERVER='192.168.0.102'
+
+# SERVER = socket.gethostbyname(socket.gethostname())
+
 
 # SSL configuration
 USE_SSL = True  # Set to False to disable SSL (for testing)
