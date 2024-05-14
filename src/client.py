@@ -7,14 +7,14 @@ FORMAT = 'UTF-8'  # Setting the encoding format for communication
 HEADERSIZE = 1024  # Setting the header size for messages
 PORT = 5050  # Setting the port number for the server
 # Getting the server IP address
-SERVER='192.168.0.102'
+SERVER='192.168.141.116'
 
 # SERVER = socket.gethostbyname(socket.gethostname())
 
 
 # SSL configuration
-USE_SSL = True  # Set to False to disable SSL (for testing)
-SSL_CAFILE = './ssl_certs/ca_cert.pem'  # Path to CA certificate file
+# USE_SSL = True  # Set to False to disable SSL (for testing)
+# SSL_CAFILE = './ssl_certs/ca_cert.pem'  # Path to CA certificate file
 
 
 client_socket = socket.socket(socket.AF_INET,
@@ -31,58 +31,74 @@ client_socket.connect((SERVER, PORT))  # Connecting to server
 # else:
 #     ssl_socket = client_socket
 
-# print(ssl_socket)
 
-
-def send_search_query(search_query: str) -> None:
+def send_search_query(search_query: str, client_socket: socket.socket) -> None:
     """
     Sends a search query to the server.
 
     Args:
         search_query (str): The search query to send.
+        client_socket (socket.socket): The socket to use for communication.
 
     Returns:
         None
     """
 
     search_query_length = len(search_query)  # Getting length of search query
+    
+
     send_length = str(search_query_length).encode(
         FORMAT).strip()  # Encoding length of search query
+    
     # Padding the header size
     send_length += b'\n' * (HEADERSIZE - len(send_length))
-    client_socket.send(send_length)  # Sending header length to server
-    # Sending search query to server
+    
+    # Sending header length to server
+    client_socket.send(send_length)  
+    
+    # Send search query to server
     client_socket.send(search_query.encode(FORMAT))
 
 
-def receive_message() -> str:
+def receive_message(client_socket: socket.socket) -> str:
     """
     Receives a message from the server.
+
+    Args:
+        client_socket (socket.socket): The socket to use for communication.
 
     Returns:
         str: The received message.
     """
-
-    message_header = client_socket.recv(HEADERSIZE).decode(
-        FORMAT)  # Receiving message header from server
-    if not message_header:  # Checking if header is empty
-        # Printing client disconnection info
-        print(f"Client {client_socket} disconnected")
-
     try:
+        # Receiving message header from server
+        message_header = client_socket.recv(HEADERSIZE).decode(
+            FORMAT)  
+        
+        # Checking if header is empty
+        if not message_header:
+            # Printing client disconnection info
+            print(f"Client {client_socket} disconnected")
+
         # Converting message header to integer
         message_length = int(message_header.strip())
-
-    except ValueError:
-        # Printing invalid message header
-        print(f"Invalid message header: {message_header}")
-
-    finally:
+        
+        # Receiving message from server
         message = client_socket.recv(message_length).decode(
-            FORMAT)  # Receiving message from server
-        return f'[Received message from server] {message_length} : {
-            message}'  # Returning received message
+            FORMAT)
 
+        # Returning received message
+        return f'[Received message from server] {message_length} : {message}'
+    
+    except ValueError:
+        raise Exception("Error receiving message: Invalid message header")
+    
+    except Exception:
+        raise Exception(f"Error receiving message: Error reading message from server")
+
+
+    
+        
 
 def main() -> None:
     """
@@ -93,13 +109,17 @@ def main() -> None:
     # Continuously accept user input and send messages to the server
     while True:
         # Prompting user for input
-        search_text = input("Enter your message ('exit' to quit): ")
+        search_text = input("Enter your message ('exit' to quit): ").strip()
+        
+        # prompt new input is the loop if the input is not empty
+        if len(search_text) == 0:
+            continue
+
         if search_text.lower() == 'exit':  # Checking if user wants to exit
             break  # Exiting the loop if user wants to quit
-        send_search_query(search_text)  # Sending search query to server
-        response = receive_message()  # Receiving response from server
+        send_search_query(search_text, client_socket)  # Sending search query to server
+        response = receive_message(client_socket)  # Receiving response from server
         print(response)  # Printing the received response
-
 
 if __name__ == '__main__':
     main()  # Calling the main function if script is executed directly
