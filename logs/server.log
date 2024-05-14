@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "/home/frosty/projects/introductory-test/src/server.py", line 240, in <module>
-    start_server()  # Starting the server
-    ^^^^^^^^^^^^^^
-  File "/home/frosty/projects/introductory-test/src/server.py", line 222, in start_server
-    sys.stdout(f'Server is listening at {SERVER}\n')  # Printing server listening info
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TypeError: '_io.TextIOWrapper' object is not callable
-arguments (1 given)
