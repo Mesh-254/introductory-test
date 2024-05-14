@@ -8,24 +8,26 @@ import threading
 import sys
 import time  # Importing time for time-related operations
 import ssl  # Importing ssl for secure socket layer operations
-from typing import Tuple, List  # Importing typing for type hints
+from typing import Tuple, Union  # Importing typing for type hints
+import os
+import signal
 
 FORMAT = 'UTF-8'  # Setting the encoding format for communication
 HEADERSIZE = 1024  # Setting the header size for messages
 PORT = 5050  # Setting the port number for the server
 # Getting the server IP address
-SERVER = '192.168.0.102'
+SERVER = '192.168.141.116'
 
 # SERVER = socket.gethostbyname(socket.gethostname())
 
 
 # SSL configuration
-# USE_SSL = True  # Set to False to disable SSL (for testing)
-# SSL_CERTFILE = './ssl_certs/certchain.pem'
-# SSL_KEYFILE = './ssl_certs/private.key'
+USE_SSL = True  # Set to False to disable SSL (for testing)
+SSL_CERTFILE = './ssl_certs/server.crt'
+SSL_KEYFILE = './ssl_certs/private.key'
 
 
-def read_config() -> str:
+def read_config(config_file_path=None) -> str:
     """
     Reads the configuration file to get the path.
 
@@ -34,20 +36,28 @@ def read_config() -> str:
     Raises:
         FileNotFoundError: If the configuration file is not found.
     """
-    try:
-        with open('/home/frosty/projects/introductory-test/config.ini',
-                  'r') as f:
-            # Iterating through the lines in the configuration file
-            for data in f:
-                if data.startswith(
-                        'linuxpath='):  # Checking for the linuxpath line
-                    file_path = data.strip().split(
-                        '=')[1]  # Extracting the file path
-                    return file_path  # Returning the file path
 
-    except FileNotFoundError as e:  # Handling file not found error
-        sys.stderr.write("Error accessing config file : {}\n".format(str(e)))
-        sys.exit()  # Exiting the program if config file is not found
+    # If no config file path is provided, use the default config.ini file located in 
+    # the same directory as the current script
+    if config_file_path is None:
+        config_file_path = os.path.join(os.path.dirname(__file__), 'config.ini')
+
+    try:
+        with open('config.ini', 'r') as f:
+            for data in f:
+                if data.startswith('linuxpath='):
+                    file_path = data.strip().split('=')[1].strip()
+                    return file_path
+                
+    except FileNotFoundError as e:
+        # Log the error message to stderr
+        sys.stderr.write(f"Error accessing config file: {e}\n")
+        # Re-raise the exception to propagate it further
+        raise FileNotFoundError("Config file not found")
+    
+    # Return an empty string if the file is empty or the key is not found
+    return ""
+
 
 
 def fetch_file_data(file_path: str) -> str:
@@ -69,16 +79,19 @@ def fetch_file_data(file_path: str) -> str:
             return file_data  # Returning the file data
     except FileNotFoundError as e:  # Handling file not found error
         sys.stderr.write("file in path was not found: {}\n".format(str(e)))
-        sys.exit()  # Exiting the program if file is not found
+        raise
     except Exception as e:  # Handling other exceptions
         sys.stderr.write(
             "An error occurred while reading the file: {}\n".format(
                 str(e)))
-        sys.exit()  # Exiting the program if an error occurs
+        raise
 
+
+# Define a global variable to store file contents
+file_data = None
 
 def find_string_match(
-        message: str, REREAD_ON_QUERY: bool = True) -> Tuple[str, float, str]:
+        message: str, REREAD_ON_QUERY: bool = False) -> Tuple[str, float, str]:
     """
     Searches for a full match of a string in a file.
 
@@ -91,24 +104,21 @@ def find_string_match(
         time taken to find the match,
                and the current timestamp.
     """
+
+    # Declare file_data as a global variable
+    global file_data
+
     file_path = read_config()  # Getting the file path from configuration
 
-    if REREAD_ON_QUERY:
-        # Get file content and store it in memory
-        file_data = fetch_file_data(file_path)  # Fetching file data
-    else:
-        # Use global variable which contains data from last search
-        if 'file_data' not in globals():
-            # Fetching file data if not already present
-            file_data = fetch_file_data(file_path)
-        file_data = file_data  # Storing file data
+    # Re-read the file on every query or if file_data is not present
+    if REREAD_ON_QUERY or file_data is None:
+        
+        file_data = fetch_file_data(file_path)
 
     start_time = time.time()  # Recording the start time of search
 
-    # Perform KMP string search for each line in the file
     for line in file_data.splitlines():
-
-        if message.strip() in line:
+        if message.strip() == line.strip():
             end_time = time.time()  # Recording the end time
             time_taken = end_time - start_time  # Calculating the time taken
             current_time = time.strftime(
@@ -126,7 +136,8 @@ def find_string_match(
     return 'STRING NOT FOUND\n', time_taken, current_time
 
 
-def handle_clients(client_socket: socket.socket, address: tuple) -> None:
+def handle_clients(client_socket: socket.socket,
+                   address: Tuple[str, int]) -> None:
     """
     Handles client connections and communication.
 
@@ -138,14 +149,17 @@ def handle_clients(client_socket: socket.socket, address: tuple) -> None:
         None
     """
     try:
+        # Printing client connection info
         sys.stdout.write(f'Server established new connection from {
-                         address}\n')  # Printing client connection info
+            address}\n')
+        sys.stdout.flush()
 
         # Wrap client socket with SSL if enabled
         # if USE_SSL:
         #     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         #     context.load_cert_chain(SSL_CERTFILE, SSL_KEYFILE)
-        #     ssl_socket = context.wrap_socket(client_socket, server_side=True)
+        #     ssl_socket: Union[socket.socket, ssl.SSLSocket] =
+        #     context.wrap_socket(client_socket, server_side=True)
         # else:
         #     ssl_socket = client_socket
 
@@ -162,11 +176,12 @@ def handle_clients(client_socket: socket.socket, address: tuple) -> None:
             # Read data from client
             message_header = client_socket.recv(HEADERSIZE).decode(
                 FORMAT)  # Receiving message header from client
-            if not len(message_header):  # Checking if header length is zero
-                return False  # Returning if header length is zero
-            if not message_header:  # Checking if header is empty
+            
+            # Checking if header is empty or has zero length
+            if not message_header or not len(message_header):
                 # Printing client disconnection info
                 sys.stdout.write(f"Client {address} disconnected\n")
+                sys.stdout.flush()
                 break  # Breaking the loop if client disconnects
             try:
                 # Converting message header to integer
@@ -175,27 +190,27 @@ def handle_clients(client_socket: socket.socket, address: tuple) -> None:
                 # Handling invalid message header
                 sys.stderr.write(f"Invalid message header from {
                                  address}:{message_header}\n")
+
                 # Continuing to next iteration if message header is invalid
                 continue
             # Receiving message from client
             message = client_socket.recv(message_length).decode(
                 FORMAT)
+
+            sys.stdout.write('"DEBUG"\n')
+            sys.stdout.flush()
+
             # Printing received message from client
-            sys.stdout.write(f'[Received string from Client {address}:]{
+            sys.stdout.write(f'[Received string from Client {address}:Len]{
                              message_length} : {message}\n')
             # Flush the output to ensure it's immediately written to the file
             sys.stdout.flush()
-            # Search for the match in the file using the received search query
+            # r Search for the match in the file using the received search
+            # query
             string_match, time_taken, current_time = find_string_match(
                 message)  # Searching for string match
             if string_match:  # Checking if string match is found
                 sys.stdout.write(string_match)  # Printing string match
-                # Flush the output to ensure it's immediately written to the
-                # file
-                sys.stdout.flush()
-
-                # Printing current timestamp
-                sys.stdout.write(current_time + '\n')
                 # Flush the output to ensure it's immediately written to the
                 # file
                 sys.stdout.flush()
@@ -219,20 +234,31 @@ def handle_clients(client_socket: socket.socket, address: tuple) -> None:
                     # the file
                     sys.stdout.flush()
 
-            # Code to send the string match to client
-            string_length = len(string_match)  # Getting length of string match
-            send_length = str(string_length).encode(
-                FORMAT)  # Encoding string length
-            # Padding the header size
-            send_length += b'\n' * (HEADERSIZE - len(send_length))
-            client_socket.send(send_length)  # Sending header length to client
-            # Sending string match to client
-            client_socket.send(string_match.encode(FORMAT))
+                # Printing current timestamp
+                sys.stdout.write(current_time + '\n')
+                # Flush the output to ensure it's immediately written to the
+                # file
+                sys.stdout.flush()
+
+            if string_match:
+                try:
+                    # Code to send the string match to client
+                    string_length = len(string_match)  # Getting length of string match
+                    send_length = str(string_length).encode(
+                        FORMAT)  # Encoding string length
+                    # Padding the header size
+                    send_length += b'\n' * (HEADERSIZE - len(send_length))
+                    client_socket.send(send_length)  # Sending header length to client
+                    # Sending string match to client
+                    client_socket.send(string_match.encode(FORMAT))
+                
+                except Exception as e:
+                    sys.stderr.write(f'Error occured while sending string match{e}')
 
     except Exception as e:  # Handling exceptions
         # Printing error message
         sys.stderr.write(f"Error handling client {address}: {e}\n")
-        sys.exit()  # Exiting the program
+
 
 
 def start_server() -> None:
@@ -250,26 +276,31 @@ def start_server() -> None:
         1)  # Setting socket options to Reload/reatart always
     server_socket.bind((SERVER, PORT))  # Binding server to address and port
     server_socket.listen()  # Starting to listen for connections
+        
     # Printing server listening info
     sys.stdout.write(f'Server is listening at {SERVER}\n')
     sys.stdout.flush()
     while True:  # Infinite loop to accept client connections
-        # Accepting client connection
-        client_socket, address = server_socket.accept()
+        
+        try:
+            # Accepting client connection
+            client_socket, address = server_socket.accept()
 
-        # Start a new thread to handle the client
-        # Passing target function and arguments
-        thread = threading.Thread(
-            target=handle_clients, args=(
-                client_socket, address))
-        thread.start()  # Starting the thread
-        # Printing active connections count
-        sys.stdout.write(
-            f'[active connections:]{
-                threading.active_count() - 1}\n')
-        # Flush the output to ensure it's immediately written to the file
-        sys.stdout.flush()
-
+            # Start a new thread to handle the client
+            # Passing target function and arguments
+            thread = threading.Thread(
+                target=handle_clients, args=(
+                    client_socket, address))
+            thread.start()  # Starting the thread
+            # Printing active connections count
+            sys.stdout.write(
+                f'[active connections:]{
+                    threading.active_count() - 1}\n')
+            # Flush the output to ensure it's immediately written to the file
+            sys.stdout.flush()
+        except Exception as e:
+            sys.stderr.write(f"Error accepting client connection{e}")
+            sys.exit()
 
 if __name__ == '__main__':
 
