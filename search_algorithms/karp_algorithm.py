@@ -54,6 +54,9 @@ def karp_rabin_string_match(pattern: str, text: str) -> tuple:
     return 'STRING NOT FOUND\n', time_taken, current_time
 
 
+file_data = None
+
+
 def find_string_match(
         message: str, REREAD_ON_QUERY: bool = False) -> tuple:
     """
