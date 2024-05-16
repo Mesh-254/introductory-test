@@ -2,9 +2,9 @@ from unittest.mock import mock_open, patch
 import pytest
 from pathlib import Path
 import os
-from src.server import read_config,
-fetch_file_data, find_string_match,
-handle_clients, start_server
+from src.server import read_config, handle_clients, start_server
+from src.server import fetch_file_data, find_string_match
+
 
 # Define test data directory
 TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), './test_data')
@@ -67,8 +67,8 @@ class TestServer:
             if result is None:
                 assert True, "Expected ValueError for missing 'linuxpath='"
         except ValueError as e:
-            assert str(
-                e) == "Invalid config file format:'linuxpath=' not found.",
+            assert str(e) == f"Invalid config file format:\
+            'linuxpath=' not found."
             f"Unexpected error message: {e}"
 
     def test_invalid_file_path(self):
@@ -144,8 +144,9 @@ class TestServer:
             # Asserting the expected result
             assert result == expected_result
 
-
 # Define test data
+
+
 @pytest.fixture
 def test_data_dir():
     return TEST_DATA_DIR
