@@ -87,7 +87,8 @@ def receive_message(client_socket: socket.socket) -> str:
             FORMAT)
 
         # Returning received message
-        return f'[Received message from server] {message_length} : {message}'
+        return f'[Received message from server] Length: {
+            message_length} : {message}'
 
     except ValueError:
         raise Exception("Error receiving message: Invalid message header")
