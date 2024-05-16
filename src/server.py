@@ -88,54 +88,31 @@ def fetch_file_data(file_path: str) -> str:
         raise
 
 
-def preprocess(pattern: str) -> dict:
+
+def linear_search(text: str, pattern: str) -> bool:
     """
-    Preprocesses the pattern to generate a skip table.
+    Performs linear search to find a whole
+    line matching of the pattern in the text.
 
     Args:
-        pattern (str): The pattern to preprocess.
-
-    Returns:
-        dict: A dictionary containing the skip table
-        for characters in the pattern.
-    """
-    skip_table = {}  # Create an empty dictionary for the skip table
-    m = len(pattern)  # Get the length of the pattern
-
-    # Iterate over the characters in the pattern
-    for i in range(m):
-        # Calculate the skip value for the current character and add it to the
-        # skip table
-        skip_table[pattern[i]] = m - i - 1
-
-    return skip_table  # Return the skip table
-
-
-def two_way_string_match(pattern: str, text: str) -> bool:
-    """
-    Performs Two-Way String Matching to find a match of a line in the text.
-
-    Args:
-        pattern (str): The pattern to search for.
         text (str): The text to search within.
+        pattern (str): The pattern to search for.
 
     Returns:
-        bool: True if a match of a line is found in the text, False otherwise.
+        bool: True if the whole line matching of
+        the pattern is found in the text, False otherwise.
     """
-    # Preprocess the pattern to generate the skip table
-    skip_table = preprocess(pattern)
-    pattern_lines = pattern.splitlines()  # Split the pattern into lines
-    text_lines = text.splitlines()  # Split the text into lines
-    m = len(pattern_lines)  # Get the number of lines in the pattern
-    n = len(text_lines)  # Get the number of lines in the text
+    # Split the text into lines
+    lines = text.split('\n')
 
-    # Iterate over the text
-    for i in range(n - m + 1):
-        # Check if the lines in the text match the lines in the pattern
-        if text_lines[i:i + m] == pattern_lines:
-            return True  # Match found
+    # Iterate through each line in the text
+    for line in lines:
+        # Check if the current line matches the pattern (ignoring leading and
+        # trailing whitespaces)
+        if line.strip() == pattern.strip():
+            return True  # Whole line matching found
 
-    return False  # No match found
+    return False  # Whole line matching not found
 
 
 # Define a global variable to store file contents
@@ -143,7 +120,7 @@ file_data = None
 
 
 def find_string_match(
-        message: str, REREAD_ON_QUERY: bool = False) -> Tuple[str, float, str]:
+        message: str, REREAD_ON_QUERY: bool = False) -> tuple:
     """
     Searches for a full match of a string in a file.
 
@@ -153,8 +130,7 @@ def find_string_match(
 
     Returns:
         tuple: A tuple containing the search result,
-        time taken to find the match,
-               and the current timestamp.
+        time taken to find the match, and the current timestamp.
     """
 
     # Declare file_data as a global variable
@@ -168,23 +144,22 @@ def find_string_match(
 
     start_time = time.time()  # Recording the start time of search
 
-    # Check if the message exists as a full line in the file data
-    if two_way_string_match(message, file_data.strip()):
-        end_time = time.time()  # Recording the end time
-        time_taken = end_time - start_time  # Calculating the time taken
-        current_time = time.strftime(
-            '%Y-%m-%d %H:%M:%S',
-            time.localtime())  # Getting current timestamp
-        # Returning match result, time taken, and timestamp
-        return 'STRING EXISTS\n', time_taken, current_time
+    # Call linear_search function to search for the pattern in the file data
+    result = linear_search(file_data, message)
+
+    end_time = time.time()  # Recording the end time
+
+    # Calculating the time taken
+    time_taken = end_time - start_time
+
+    # Returning match result, time taken, and timestamp
+    if result:
+        return 'STRING EXISTS\n', time_taken, time.strftime(
+            '%Y-%m-%d %H:%M:%S', time.localtime())
     else:
-        end_time = time.time()  # Recording the end time
-        time_taken = end_time - start_time  # Calculating the time taken
-        current_time = time.strftime(
-            '%Y-%m-%d %H:%M:%S',
-            time.localtime())  # Getting current timestamp
-        # Returning match result, time taken, and timestamp
-        return 'STRING NOT FOUND\n', time_taken, current_time
+        return 'STRING NOT FOUND\n', time_taken, time.strftime(
+            '%Y-%m-%d %H:%M:%S', time.localtime())
+
 
 
 def handle_clients(client_socket: socket.socket,
