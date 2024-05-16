@@ -143,7 +143,7 @@ file_data = None
 
 
 def find_string_match(
-        message: str, REREAD_ON_QUERY: bool = True) -> Tuple[str, float, str]:
+        message: str, REREAD_ON_QUERY: bool = False) -> Tuple[str, float, str]:
     """
     Searches for a full match of a string in a file.
 
@@ -252,8 +252,8 @@ def handle_clients(client_socket: socket.socket,
             sys.stdout.flush()
 
             # Printing received message from client
-            sys.stdout.write(f'[Received string from Client {address}:Len]{
-                             message_length} : {message}\n')
+            sys.stdout.write(f'[Received string from Client {
+                address}:] Length {message_length} : {message}\n')
             # Flush the output to ensure it's immediately written to the file
             sys.stdout.flush()
             # r Search for the match in the file using the received search
