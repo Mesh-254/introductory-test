@@ -6,13 +6,13 @@ Description=introductory_test.service
 Type=simple
 User=root
 Group=root
-ExecStart=/usr/bin/python3 /home/frosty/projects/introductory-test/src/server.py
+ExecStart=/usr/bin/python3 /introductory-test/src/server.py
 WorkingDirectory=/tmp
 Restart=always
 Nice=19
 LimitNOFILE=16384
-StandardOutput=file:/home/frosty/projects/introductory-test/logs/serveroutput.log
-StandardError=file:/home/frosty/projects/introductory-test/logs/server.log
+StandardOutput=file:/introductory-test/logs/serveroutput.log
+StandardError=file:/introductory-test/logs/server.log
 
 
 [Install]
