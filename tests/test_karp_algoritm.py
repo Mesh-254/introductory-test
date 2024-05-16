@@ -162,7 +162,7 @@ def test_find_string_match_stress_test(monkeypatch, caplog):
                 start_time = time.time()
                 # Invoking find_string_match with a sample query
                 for _ in range(query_count):
-                    result = find_string_match("Line 2", REREAD_ON_QUERY=False)
+                    result = find_string_match("Line 2", REREAD_ON_QUERY=True)
 
                 end_time = time.time()
 
