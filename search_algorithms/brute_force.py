@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from typing import Tuple  # Import Tuple for type hinting
+from typing import Tuple
+from src.server import read_config
 
 
 def brute_force_match(pattern: str, text: str) -> bool:
@@ -34,7 +35,7 @@ file_data = None  # Define a global variable to store file contents
 
 
 def find_string_match(
-        message: str, REREAD_ON_QUERY: bool = True) -> Tuple[str, float, str]:
+        message: str, REREAD_ON_QUERY: bool = False) -> Tuple[str, float, str]:
     """
     Searches for a full match of a string in a file.
 
