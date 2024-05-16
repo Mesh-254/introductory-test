@@ -29,6 +29,7 @@ def linear_search(text: str, pattern: str) -> bool:
     return False  # Whole line matching not found
 
 
+# Define a global variable to store file contents
 file_data = None
 
 
