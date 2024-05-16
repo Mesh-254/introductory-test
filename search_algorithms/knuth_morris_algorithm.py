@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from typing import Tuple, List
 import time
 from src.server import read_config, fetch_file_data
