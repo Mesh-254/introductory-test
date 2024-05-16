@@ -1,0 +1,19 @@
+Server is listening at 192.168.0.102
+Server established new connection from ('192.168.0.102', 59208)
+This is the path contained in config file: /home/frosty/projects/introductory-test/root/200k.txt
+[active connections:]1
+"DEBUG"
+[Received string from Client ('192.168.0.102', 59208):Len]2 : ss
+STRING NOT FOUND
+Execution time: 247.3921775817871 milliseconds
+2024-05-15 22:25:39
+"DEBUG"
+[Received string from Client ('192.168.0.102', 59208):Len]4 : When
+STRING NOT FOUND
+Execution time: 248.9762306213379 milliseconds
+2024-05-15 22:25:43
+"DEBUG"
+[Received string from Client ('192.168.0.102', 59208):Len]3 : New
+STRING EXISTS
+Execution time: 144.99521255493164 milliseconds
+2024-05-15 22:25:44
