@@ -39,6 +39,10 @@ def naive_string_match(pattern: str, text: str) -> tuple:
     return 'STRING NOT FOUND\n', time_taken, current_time
 
 
+# Define a global variable to store file contents
+file_data = None
+
+
 def find_string_match(
         message: str, REREAD_ON_QUERY: bool = False) -> tuple:
     """
