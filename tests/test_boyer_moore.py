@@ -5,7 +5,7 @@ import sys
 import os
 import tempfile
 from search_algorithms.boyer_moore import boyer_moore
-from src.server import find_string_match
+from src.server import find_string_match, fetch_file_data
 import logging
 
 # Setup logging
@@ -74,7 +74,7 @@ def test_find_string_match_file_not_found(monkeypatch):
 
     monkeypatch.setattr("src.server.read_config", mock_read_config)
     with pytest.raises(FileNotFoundError):
-        find_string_match("pattern", REREAD_ON_QUERY=False)
+        find_string_match("pattern", REREAD_ON_QUERY=True)
 
 
 def test_find_string_match_missing_configuration(monkeypatch):
@@ -83,7 +83,7 @@ def test_find_string_match_missing_configuration(monkeypatch):
 
     monkeypatch.setattr("src.server.read_config", mock_read_config)
     with pytest.raises(FileNotFoundError):
-        find_string_match("pattern", REREAD_ON_QUERY=False)
+        find_string_match("pattern", REREAD_ON_QUERY=True)
 
 
 def test_find_string_match_pattern_not_found(monkeypatch):
@@ -107,9 +107,13 @@ def test_find_string_match_pattern_not_found(monkeypatch):
 
 def test_find_string_match_execution_time(monkeypatch):
     file_sizes = [10000, 50000, 100000, 500000, 1000000]
+
     for size in file_sizes:
         try:
-            tmp_file_path = create_temp_file("Line 1\nLine 2\n" * size)
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                file_data = ("Line 1\nLine 2\n" * size).encode('utf-8')
+                tmp_file.write(file_data)
+                tmp_file_path = tmp_file.name
 
             def mock_read_config():
                 return tmp_file_path
@@ -118,23 +122,22 @@ def test_find_string_match_execution_time(monkeypatch):
                 with open(file_path, 'r') as f:
                     return f.read()
 
-            with monkeypatch.context() as m:
-                m.setattr("src.server.read_config", mock_read_config)
-                m.setattr("src.server.fetch_file_data", mock_fetch_file_data)
+            monkeypatch.setattr("src.server.read_config", mock_read_config)
+            monkeypatch.setattr(
+                "src.server.fetch_file_data",
+                mock_fetch_file_data)
 
             start_time = time.time()
-
-            result = find_string_match("Line 1\nLine 2", REREAD_ON_QUERY=False)
-
+            result, time_taken, current_time = find_string_match(
+                "Line 1\nLine 2", REREAD_ON_QUERY=True)
             end_time = time.time()
 
-            execution_time = (end_time - start_time) * 1000
+            time_taken = (end_time - start_time) * 1000
 
-            logger.info(
-                f"File size: {size} rows, Execution time: {
-                    execution_time:.4f} milliseconds")
-
+            logger.info(f"File size: {size}, Execution time: {
+                        time_taken} milliseconds")
         except Exception as e:
+            # Logging any exceptions that occur during the test
             logger.error(f"Exception during stress test: {e}")
         finally:
             os.remove(tmp_file_path)
@@ -161,27 +164,34 @@ def test_find_string_match_stress_test(monkeypatch, caplog):
     for file_size in file_sizes:
         for query_count in query_counts:
             try:
-                # Creating temporary file with specified content
-                tmp_file_path = create_temp_file(
-                    "Line 1\nLine 2\n" * file_size)
+                with tempfile.NamedTemporaryFile(delete=False) as file:
+                    file_data = (
+                        "Line 1\nTwo way Search \nLine 2\n" *
+                        file_size).encode('utf-8')
+                    file.write(file_data)
+                    tmp_file_path = file.name
 
                 start_time = time.time()
+
                 # Invoking find_string_match with a sample query
                 for _ in range(query_count):
                     result = find_string_match("Line 2", REREAD_ON_QUERY=True)
+
                 end_time = time.time()
 
                 # Calculating execution time per query
                 total_time_taken = (end_time - start_time) * 1000 / query_count
 
                 # Logging execution time
-                logger.info(f"File size: {file_size} rows, Queries per second:"
-                    f"{query_count}, Average execution time per query:"
-                    f"{total_time_taken:.4f} milliseconds")
+                logger.info(f"File size: {file_size}, Queries per second:"
+                            f"{query_count}, Average execution time per query:"
+                            f"{total_time_taken:.4f} milliseconds")
 
                 # Asserting that the result indicates string exists
                 assert result[0] == "STRING EXISTS\n"
+
             except Exception as e:
+
                 # Logging any exceptions that occur during the test
                 logger.error(f"Exception during stress test: {e}")
 
