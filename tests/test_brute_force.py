@@ -159,8 +159,7 @@ def test_find_string_match_execution_time(monkeypatch):
 
             assert result == "STRING EXISTS\n"
 
-            logger.info(
-                f"File size: {size} rows, Execution time: {
+            logger.info(f"File size: {size} rows, Execution time: {
                     execution_time:.4f} milliseconds")
         except Exception as e:
             logger.error(f"Exception for file size {size}: {e}")
@@ -205,9 +204,9 @@ def test_find_string_match_stress_test(monkeypatch, caplog):
                 total_time_taken = (end_time - start_time) * 1000 / query_count
 
                 # Logging execution time
-                logger.info(f"File size: {file_size} rows, Queries per second:" 
-                        f"{query_count}, Average execution time per query:"
-                        f"{total_time_taken} milliseconds")
+                logger.info(f"File size: {file_size} rows, Queries per second:"
+                            f"{query_count}, Average execution time per query:"
+                            f"{total_time_taken} milliseconds")
 
                 # Asserting that the result indicates string exists
                 assert result[0] == "STRING EXISTS\n"
