@@ -88,39 +88,39 @@ def fetch_file_data(file_path: str) -> str:
         raise
 
 
-
-def linear_search(text: str, pattern: str) -> bool:
+def brute_force_match(pattern: str, text: str) -> bool:
     """
-    Performs linear search to find a whole
-    line matching of the pattern in the text.
+    Performs brute-force string matching to check if pattern matches text line.
 
     Args:
-        text (str): The text to search within.
         pattern (str): The pattern to search for.
+        text (str): The text to search in.
 
     Returns:
-        bool: True if the whole line matching of
-        the pattern is found in the text, False otherwise.
+        bool: True if pattern matches a line in text, False otherwise.
     """
-    # Split the text into lines
-    lines = text.split('\n')
+    m = len(pattern)  # Length of the pattern
+    n = len(text)  # Length of the text
+
+    # If the length of the pattern is greater than the length of the text,
+    # there can be no match
+    if m > n:
+        return False  # No match if pattern is longer than text
 
     # Iterate through each line in the text
-    for line in lines:
-        # Check if the current line matches the pattern (ignoring leading and
-        # trailing whitespaces)
-        if line.strip() == pattern.strip():
-            return True  # Whole line matching found
+    for line in text.splitlines():
+        # Check if the current line matches the pattern
+        if line == pattern:
+            return True  # Match found
 
-    return False  # Whole line matching not found
+    return False  # No match found
 
 
-# Define a global variable to store file contents
-file_data = None
+file_data = None  # Define a global variable to store file contents
 
 
 def find_string_match(
-        message: str, REREAD_ON_QUERY: bool = False) -> tuple:
+        message: str, REREAD_ON_QUERY: bool = False) -> Tuple[str, float, str]:
     """
     Searches for a full match of a string in a file.
 
@@ -129,37 +129,44 @@ def find_string_match(
         REREAD_ON_QUERY (bool): Whether to re-read the file on every query.
 
     Returns:
-        tuple: A tuple containing the search result,
+        tuple: A tuple containing the search result
+        ('STRING EXISTS\n' or 'STRING NOT FOUND\n'),
         time taken to find the match, and the current timestamp.
     """
 
-    # Declare file_data as a global variable
-    global file_data
+    global file_data  # Declare file_data as a global variable
 
     file_path = read_config()  # Getting the file path from configuration
 
     # Re-read the file on every query or if file_data is not present
     if REREAD_ON_QUERY or file_data is None:
-        file_data = fetch_file_data(file_path)
+        file_data = fetch_file_data(file_path)  # Fetch the file data
 
     start_time = time.time()  # Recording the start time of search
 
-    # Call linear_search function to search for the pattern in the file data
-    result = linear_search(file_data, message)
+    # Split the message into lines to match against the file data
+    pattern_lines = message.splitlines()
+    text_lines = file_data.splitlines()  # Split the file data into lines
+
+    # Iterate through each line in the file data
+    for line in text_lines:
+        # Check if the current line matches the message using brute force
+        if brute_force_match(line, message):
+            end_time = time.time()  # Recording the end time
+            time_taken = end_time - start_time  # Calculating the time taken
+            current_time = time.strftime(
+                '%Y-%m-%d %H:%M:%S',
+                time.localtime())  # Getting the current timestamp
+            # Returning match result, time taken, and timestamp
+            return 'STRING EXISTS\n', time_taken, current_time
 
     end_time = time.time()  # Recording the end time
-
-    # Calculating the time taken
-    time_taken = end_time - start_time
-
+    time_taken = end_time - start_time  # Calculating the time taken
+    current_time = time.strftime(
+        '%Y-%m-%d %H:%M:%S',
+        time.localtime())  # Getting the current timestamp
     # Returning match result, time taken, and timestamp
-    if result:
-        return 'STRING EXISTS\n', time_taken, time.strftime(
-            '%Y-%m-%d %H:%M:%S', time.localtime())
-    else:
-        return 'STRING NOT FOUND\n', time_taken, time.strftime(
-            '%Y-%m-%d %H:%M:%S', time.localtime())
-
+    return 'STRING NOT FOUND\n', time_taken, current_time
 
 
 def handle_clients(client_socket: socket.socket,
