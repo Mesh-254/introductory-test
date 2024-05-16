@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 from src.server import fetch_file_data, read_config
 
