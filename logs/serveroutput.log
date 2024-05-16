@@ -1,4 +1,5 @@
-Server is listening at 192.168.0.102
+Server is listening at 127.0.0.2
+102
 Server established new connection from ('192.168.0.102', 59208)
 This is the path contained in config file: /home/frosty/projects/introductory-test/root/200k.txt
 [active connections:]1
