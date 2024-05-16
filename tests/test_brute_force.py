@@ -97,7 +97,7 @@ def test_find_string_match_pattern_found(monkeypatch):
     monkeypatch.setattr("src.server.fetch_file_data", mock_fetch_file_data)
 
     result, time_taken, current_time = find_string_match(
-        "Line 2", REREAD_ON_QUERY=True)
+        "Line 2", REREAD_ON_QUERY=False)
     assert result == "STRING EXISTS\n"
 
     os.remove(tmp_file_path)
@@ -120,7 +120,7 @@ def test_find_string_match_pattern_not_found(monkeypatch):
     monkeypatch.setattr("src.server.fetch_file_data", mock_fetch_file_data)
 
     result, time_taken, current_time = find_string_match(
-        "Nonexistent line", REREAD_ON_QUERY=True)
+        "Nonexistent line", REREAD_ON_QUERY=False)
     assert result == "STRING NOT FOUND\n"
 
     os.remove(tmp_file_path)
