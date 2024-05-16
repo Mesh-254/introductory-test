@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 from typing import Tuple
 # Import custom functions from the server module
@@ -49,7 +50,7 @@ file_data = None
 
 
 def find_string_match(
-        message: str, REREAD_ON_QUERY: bool = True) -> Tuple[str, float, str]:
+        message: str, REREAD_ON_QUERY: bool = False) -> Tuple[str, float, str]:
     """
     Searches for a full match of a string in a file.
 
