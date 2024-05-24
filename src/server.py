@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""
+Server Module
+
+This module contains the implementation of a server that listens for
+client connections and handles communication with multiple clients
+simultaneously.
+"""
+
 # Importing the socket module for network communication
 import socket
 # Importing threading for handling multiple client connections
@@ -8,9 +16,9 @@ import threading
 import sys
 import time  # Importing time for time-related operations
 import ssl  # Importing ssl for secure socket layer operations
-from typing import Tuple, List  # Importing typing for type hints
+from typing import Tuple  # Importing typing for type hints
 import os
-import signal
+
 
 FORMAT = 'UTF-8'  # Setting the encoding format for communication
 HEADERSIZE = 1024  # Setting the header size for messages
@@ -22,9 +30,9 @@ SERVER = socket.gethostbyname(socket.gethostname())
 
 
 # SSL configuration
-USE_SSL = True  # Set to False to disable SSL (for testing)
-SSL_CERTFILE = './ssl_certs/server.crt'
-SSL_KEYFILE = './ssl_certs/private.key'
+# USE_SSL = True  # Set to False to disable SSL (for testing)
+# SSL_CERTFILE = './ssl_certs/server.crt'
+# SSL_KEYFILE = './ssl_certs/private.key'
 
 
 def read_config(config_file_path=None) -> str:
@@ -45,7 +53,7 @@ def read_config(config_file_path=None) -> str:
             os.path.dirname(__file__), 'config.ini')
 
     try:
-        with open('config.ini', 'r') as f:
+        with open('config.ini', 'r', encoding=FORMAT) as f:
             for data in f:
                 if data.startswith('linuxpath='):
                     file_path = data.strip().split('=')[1].strip()
@@ -75,16 +83,17 @@ def fetch_file_data(file_path: str) -> str:
         Exception: If an error occurs while reading the file.
     """
     try:
-        with open(file_path, 'r') as f:  # Opening the file in read mode
+        # Opening the file in read mode
+        with open(file_path, 'r', encoding=FORMAT) as f:
             file_data = f.read()  # Reading the contents of the file
             return file_data  # Returning the file data
     except FileNotFoundError as e:  # Handling file not found error
-        sys.stderr.write("file in path was not found: {}\n".format(str(e)))
+        sys.stderr.write(f'file in path was not found: {str(e)}\n')
         raise
     except Exception as e:  # Handling other exceptions
         sys.stderr.write(
-            "An error occurred while reading the file: {}\n".format(
-                str(e)))
+            f'An error occurred while reading the file: {str(e)}\n'
+        )
         raise
 
 
@@ -130,7 +139,7 @@ def find_string_match(
 
     Returns:
         tuple: A tuple containing the search result
-        ('STRING EXISTS\n' or 'STRING NOT FOUND\n'),
+        ('STRING EXISTS' or 'STRING NOT FOUND'),
         time taken to find the match, and the current timestamp.
     """
 
@@ -145,7 +154,6 @@ def find_string_match(
     start_time = time.time()  # Recording the start time of search
 
     # Split the message into lines to match against the file data
-    pattern_lines = message.splitlines()
     text_lines = file_data.splitlines()  # Split the file data into lines
 
     # Iterate through each line in the file data
@@ -183,8 +191,7 @@ def handle_clients(client_socket: socket.socket,
     """
     try:
         # Printing client connection info
-        sys.stdout.write(f'Server established new connection from {
-            address}\n')
+        sys.stdout.write(f'Server established new connection from {address}\n')
         sys.stdout.flush()
 
         # Wrap client socket with SSL if enabled
@@ -201,14 +208,15 @@ def handle_clients(client_socket: socket.socket,
         if path is None:
             # Raising error if file path is not found
             raise ValueError("File Path not found.")
-        sys.stdout.write(f'This is the path contained in config file: {
-                         path}\n')  # Printing file path
+        # Printing file path
+        sys.stdout.write(
+            f'This is the path contained in config file: {path}\n'
+        )
 
         connected = True  # Flag to indicate client connection status
         while connected:
-            # Read data from client
-            message_header = client_socket.recv(HEADERSIZE).decode(
-                FORMAT)  # Receiving message header from client
+            # Read data from client; Receiving message header from client
+            message_header = client_socket.recv(HEADERSIZE).decode(FORMAT)
 
             # Checking if header is empty or has zero length
             if not message_header or not len(message_header):
@@ -221,8 +229,9 @@ def handle_clients(client_socket: socket.socket,
                 message_length = int(message_header.strip())
             except ValueError:
                 # Handling invalid message header
-                sys.stderr.write(f"Invalid message header from {
-                                 address}:{message_header}\n")
+                sys.stderr.write(
+                    f"Invalid message header from {address}:{message_header}\n"
+                )
 
                 # Continuing to next iteration if message header is invalid
                 continue
@@ -234,8 +243,10 @@ def handle_clients(client_socket: socket.socket,
             sys.stdout.flush()
 
             # Printing received message from client
-            sys.stdout.write(f'[Received string from Client {
-                address}:] Length {message_length} : {message}\n')
+            sys.stdout.write(
+                f'[Received string from Client {address}:]'
+                f'Length {message_length} : {message}\n'
+            )
             # Flush the output to ensure it's immediately written to the file
             sys.stdout.flush()
             # r Search for the match in the file using the received search
@@ -289,7 +300,8 @@ def handle_clients(client_socket: socket.socket,
 
                 except Exception as e:
                     sys.stderr.write(
-                        f'Error occured while sending string match{e}')
+                        f'Error occured while sending string match{e}'
+                    )
 
     except Exception as e:  # Handling exceptions
         # Printing error message
