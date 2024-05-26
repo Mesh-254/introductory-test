@@ -50,7 +50,7 @@ def test_multiline_text():
 
 def test_find_string_match_execution_time(monkeypatch):
     """Test case for measuring execution time."""
-    file_sizes = [10000, 50000, 100000, 500000, 1000000]
+    file_sizes = [10000, 50000, 100000, 250000, 500000, 1000000]
 
     for size in file_sizes:
         try:
@@ -127,10 +127,9 @@ def test_find_string_match_stress_test(monkeypatch, caplog):
                 total_time_taken = (end_time - start_time) * 1000 / query_count
 
                 # Logging execution time
-                logger.info(f"File size: {file_size}, Queries per second: {
-                            query_count}, Average execution time per query: {
-                                total_time_taken:.4f} milliseconds")
-
+                logger.info(f"File size: {file_size} rows, Queries per second:"
+                            f"{query_count}, Average execution time per query:"
+                            f"{total_time_taken} milliseconds")
                 # Asserting that the result indicates string exists
                 assert result[0] == "STRING EXISTS\n"
 
