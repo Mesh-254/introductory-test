@@ -60,7 +60,6 @@ def find_string_match(
     start_time = time.time()  # Recording the start time of search
 
     # Split the message into lines to match against the file data
-    pattern_lines = message.splitlines()
     text_lines = file_data.splitlines()  # Split the file data into lines
 
     # Iterate through each line in the file data
