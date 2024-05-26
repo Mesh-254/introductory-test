@@ -91,7 +91,7 @@ def test_find_string_match_pattern_not_found(monkeypatch):
 
 
 def test_find_string_match_execution_time(monkeypatch):
-    file_sizes = [10000, 50000, 100000, 500000, 1000000]
+    file_sizes = [10000, 50000, 100000, 250000, 500000, 1000000]
 
     for size in file_sizes:
         try:
