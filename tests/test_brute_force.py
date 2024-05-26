@@ -150,22 +150,24 @@ def test_find_string_match_execution_time(monkeypatch):
             start_time = time.time()
 
             result, time_taken, current_time = find_string_match(
-                "Line 2", REREAD_ON_QUERY=True)
+                "Line 1", REREAD_ON_QUERY=True)
 
             end_time = time.time()
             execution_time = (end_time - start_time) * 1000
 
             assert result == "STRING EXISTS\n"
 
-            logger.info(f"File size: {size} rows, Execution time: {
-                execution_time:.4f} milliseconds")
+            logger.info(
+                f'File size: {size} rows, Execution time:'
+                f' {execution_time:.4f} milliseconds'
+            )
         except Exception as e:
             logger.error(f"Exception for file size {size}: {e}")
         finally:
             os.remove(tmp_file_path)
 
 
-def test_find_string_match_stress_test(monkeypatch, caplog):
+def test_find_string_match_stress_test(monkeypatch):
     """
     Stress test for the find_string_match function.
     """
