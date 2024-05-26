@@ -50,7 +50,8 @@ def read_config(config_file_path=None) -> str:
     # the same directory as the current script
     if config_file_path is None:
         config_file_path = os.path.join(
-            os.path.dirname(__file__), 'config.ini')
+            os.path.dirname(__file__), 'config.ini'
+        )
 
     try:
         with open('config.ini', 'r', encoding=FORMAT) as f:
@@ -63,7 +64,7 @@ def read_config(config_file_path=None) -> str:
         # Log the error message to stderr
         sys.stderr.write(f"Error accessing config file: {e}\n")
         # Re-raise the exception to propagate it further
-        raise FileNotFoundError("Config file not found")
+        raise
 
     # Return an empty string if the file is empty or the key is not found
     return ""
@@ -130,6 +131,7 @@ file_data = None  # Define a global variable to store file contents
 
 def find_string_match(
         message: str, REREAD_ON_QUERY: bool = False) -> Tuple[str, float, str]:
+
     """
     Searches for a full match of a string in a file.
 
@@ -139,7 +141,7 @@ def find_string_match(
 
     Returns:
         tuple: A tuple containing the search result
-        ('STRING EXISTS' or 'STRING NOT FOUND'),
+        ('STRING EXISTS\n' or 'STRING NOT FOUND\n'),
         time taken to find the match, and the current timestamp.
     """
 
@@ -162,17 +164,15 @@ def find_string_match(
         if brute_force_match(line, message):
             end_time = time.time()  # Recording the end time
             time_taken = end_time - start_time  # Calculating the time taken
-            current_time = time.strftime(
-                '%Y-%m-%d %H:%M:%S',
-                time.localtime())  # Getting the current timestamp
+            # Getting the current timestamp
+            current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
             # Returning match result, time taken, and timestamp
             return 'STRING EXISTS\n', time_taken, current_time
 
     end_time = time.time()  # Recording the end time
     time_taken = end_time - start_time  # Calculating the time taken
-    current_time = time.strftime(
-        '%Y-%m-%d %H:%M:%S',
-        time.localtime())  # Getting the current timestamp
+    # Getting the current timestamp
+    current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
     # Returning match result, time taken, and timestamp
     return 'STRING NOT FOUND\n', time_taken, current_time
 
@@ -249,10 +249,9 @@ def handle_clients(client_socket: socket.socket,
             )
             # Flush the output to ensure it's immediately written to the file
             sys.stdout.flush()
-            # r Search for the match in the file using the received search
+            # Search for the match in the file using the received search
             # query
-            string_match, time_taken, current_time = find_string_match(
-                message)  # Searching for string match
+            string_match, time_taken, current_time = find_string_match(message)
             if string_match:  # Checking if string match is found
                 sys.stdout.write(string_match)  # Printing string match
                 # Flush the output to ensure it's immediately written to the
@@ -266,7 +265,8 @@ def handle_clients(client_socket: socket.socket,
                     time_taken_ms = time_taken * 1000
                     # Printing time taken in milliseconds
                     sys.stdout.write(
-                        f'Execution time: {time_taken_ms} milliseconds\n')
+                        f'Execution time: {time_taken_ms} milliseconds\n'
+                    )
                     # Flush the output to ensure it's immediately written to
                     # the file
                     sys.stdout.flush()
@@ -292,7 +292,7 @@ def handle_clients(client_socket: socket.socket,
                     send_length = str(string_length).encode(
                         FORMAT)  # Encoding string length
                     # Padding the header size
-                    send_length += b'\n' * (HEADERSIZE - len(send_length))
+                    send_length += b' ' * (HEADERSIZE - len(send_length))
                     # Sending header length to client
                     client_socket.send(send_length)
                     # Sending string match to client
@@ -300,7 +300,7 @@ def handle_clients(client_socket: socket.socket,
 
                 except Exception as e:
                     sys.stderr.write(
-                        f'Error occured while sending string match{e}'
+                        f'Error occurred while sending string match: {e}\n'
                     )
 
     except Exception as e:  # Handling exceptions
@@ -336,17 +336,17 @@ def start_server() -> None:
             # Start a new thread to handle the client
             # Passing target function and arguments
             thread = threading.Thread(
-                target=handle_clients, args=(
-                    client_socket, address))
+                target=handle_clients, args=(client_socket, address)
+            )
             thread.start()  # Starting the thread
             # Printing active connections count
             sys.stdout.write(
-                f'[active connections:]{
-                    threading.active_count() - 1}\n')
+                f'[active connections:]{threading.active_count() - 1}\n'
+                )
             # Flush the output to ensure it's immediately written to the file
             sys.stdout.flush()
         except Exception as e:
-            sys.stderr.write(f"Error accepting client connection{e}")
+            sys.stderr.write(f"Error accepting client connection: {e}\n")
             sys.exit()
 
 
