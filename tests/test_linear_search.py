@@ -77,7 +77,7 @@ def test_exact_match():
 
 
 def test_find_string_match_execution_time(monkeypatch):
-    file_sizes = [10000, 50000, 100000, 500000, 1000000]
+    file_sizes = [10000, 50000, 100000, 250000, 500000, 1000000]
 
     for size in file_sizes:
         try:
@@ -105,8 +105,9 @@ def test_find_string_match_execution_time(monkeypatch):
 
             time_taken = (end_time - start_time) * 1000
 
-            logger.info(f"File size: {size}, Execution time: {
-                        time_taken} milliseconds")
+            logger.info(f'File size: {size}, Execution time:'
+                        f'{time_taken} milliseconds'
+                        )
         except Exception as e:
             # Logging any exceptions that occur during the test
             logger.error(f"Exception during stress test: {e}")
@@ -154,9 +155,10 @@ def test_find_string_match_stress_test(monkeypatch, caplog):
                 total_time_taken = (end_time - start_time) * 1000 / query_count
 
                 # Logging execution time
-                logger.info(f"File size: {file_size},Queries per second: {
-                    query_count}, Average execution time per query: {
-                                total_time_taken:.4f} milliseconds")
+                logger.info(f'File size: {file_size},Queries per second:'
+                            f'{query_count}, Average execution time per query:'
+                            f'{total_time_taken:.4f} milliseconds'
+                            )
 
                 # Asserting that the result indicates string exists
                 assert result[0] == "STRING EXISTS\n"
