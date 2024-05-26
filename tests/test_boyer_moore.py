@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import pytest
+
 import time
 import sys
 import os
 import tempfile
+import logging
 from search_algorithms.boyer_moore import boyer_moore
 from src.server import find_string_match, fetch_file_data
-import logging
+import pytest
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -100,13 +101,13 @@ def test_find_string_match_pattern_not_found(monkeypatch):
     monkeypatch.setattr("src.server.read_config", mock_read_config)
     monkeypatch.setattr("src.server.fetch_file_data", mock_fetch_file_data)
 
-    result = find_string_match(pattern, REREAD_ON_QUERY=False)
+    result = find_string_match(pattern, REREAD_ON_QUERY=True)
     assert result[0] == "STRING NOT FOUND\n"
     os.remove(tmp_file_path)
 
 
 def test_find_string_match_execution_time(monkeypatch):
-    file_sizes = [10000, 50000, 100000, 500000, 1000000]
+    file_sizes = [10000, 50000, 100000, 250000, 500000, 1000000]
 
     for size in file_sizes:
         try:
@@ -134,8 +135,9 @@ def test_find_string_match_execution_time(monkeypatch):
 
             time_taken = (end_time - start_time) * 1000
 
-            logger.info(f"File size: {size}, Execution time: {
-                        time_taken} milliseconds")
+            logger.info(f'File size: {size} rows, Execution time:'
+                        f'{time_taken} milliseconds'
+                        )
         except Exception as e:
             # Logging any exceptions that occur during the test
             logger.error(f"Exception during stress test: {e}")
@@ -143,7 +145,7 @@ def test_find_string_match_execution_time(monkeypatch):
             os.remove(tmp_file_path)
 
 
-def test_find_string_match_stress_test(monkeypatch, caplog):
+def test_find_string_match_stress_test(monkeypatch):
 
     def mock_read_config():
         return tmp_file_path
