@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+import time
 from typing import Tuple
-from src.server import read_config
+from src.server import fetch_file_data, read_config
 
 
 def brute_force_match(pattern: str, text: str) -> bool:
