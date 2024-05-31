@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+Client script for connecting to a server, sending search queries,
+and receiving responses. Utilizes sockets for network communication
+and can be optionally configured to use SSL for secure communication.
+"""
+
 import socket  # Importing the socket module for network communication
 import ssl  # Importing ssl for secure socket layer operations
 
@@ -50,7 +56,7 @@ def send_search_query(search_query: str, client_socket: socket.socket) -> None:
         FORMAT).strip()  # Encoding length of search query
 
     # Padding the header size
-    send_length += b'\n' * (HEADERSIZE - len(send_length))
+    send_length += b' ' * (HEADERSIZE - len(send_length))
 
     # Sending header length to server
     client_socket.send(send_length)
@@ -78,6 +84,8 @@ def receive_message(client_socket: socket.socket) -> str:
         if not message_header:
             # Printing client disconnection info
             print(f"Client {client_socket} disconnected")
+            # Return an empty string if disconnected
+            return ""
 
         # Converting message header to integer
         message_length = int(message_header.strip())
@@ -87,15 +95,14 @@ def receive_message(client_socket: socket.socket) -> str:
             FORMAT)
 
         # Returning received message
-        return f'[Received message from server] Length: {
-            message_length} : {message}'
+        return (f'[Received message from server] Length: {message_length} : '
+                f'{message}')
 
     except ValueError:
         raise Exception("Error receiving message: Invalid message header")
 
-    except Exception:
-        raise Exception(
-            f"Error receiving message: Error reading message from server")
+    except Exception as e:
+        raise Exception(f"Error receiving message: {str(e)}")
 
 
 def main() -> None:
@@ -109,11 +116,12 @@ def main() -> None:
         # Prompting user for input
         search_text = input("Enter your message ('exit' to quit): ").strip()
 
-        # prompt new input is the loop if the input is not empty
+        # prompt new input if the input is empty
         if len(search_text) == 0:
             continue
 
         if search_text.lower() == 'exit':  # Checking if user wants to exit
+            client_socket.close()  # Close the socket before exiting
             break  # Exiting the loop if user wants to quit
         # Sending search query to server
         send_search_query(search_text, client_socket)
