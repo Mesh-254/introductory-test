@@ -119,8 +119,8 @@ def test_find_string_match_execution_time(monkeypatch):
 
             time_taken = (end_time - start_time) * 1000
 
-            logger.info(f"File size: {size}, Execution time: {
-                        time_taken} milliseconds")
+            logger.info(f"File size: {size}, Execution time:"
+                        f"{time_taken} milliseconds")
         except Exception as e:
             # Logging any exceptions that occur during the test
             logger.error(f"Exception during stress test: {e}")
