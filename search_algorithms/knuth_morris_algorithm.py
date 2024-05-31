@@ -92,20 +92,15 @@ def find_string_match(
 
     start_time = time.time()  # Recording the start time of search
 
-    # Split the text into lines
-    text_lines = file_data.splitlines()
-
-    # Search for the pattern in each line
-    # of the text using Knuth–Morris–Pratt search
-    for line in text_lines:
-        if knuth_search(line, message):
-            end_time = time.time()  # Recording the end time
-            time_taken = end_time - start_time  # Calculating the time taken
-            current_time = time.strftime(
-                '%Y-%m-%d %H:%M:%S',
-                time.localtime())  # Getting current timestamp
-            # Returning match result, time taken, and timestamp
-            return 'STRING EXISTS\n', time_taken, current_time
+    # Call knuth_search function to search for the pattern in the file data
+    if knuth_search(file_data, message):
+        end_time = time.time()  # Recording the end time
+        time_taken = end_time - start_time  # Calculating the time taken
+        current_time = time.strftime(
+            '%Y-%m-%d %H:%M:%S',
+            time.localtime())  # Getting current timestamp
+        # Returning match result, time taken, and timestamp
+        return 'STRING EXISTS\n', time_taken, current_time
 
     end_time = time.time()  # Recording the end time
     time_taken = end_time - start_time  # Calculating the time taken
