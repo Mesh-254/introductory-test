@@ -114,7 +114,7 @@ class TestServer:
         with pytest.raises(FileNotFoundError):
             fetch_file_data("nonexistent_file.txt")
 
-    def test_fetch_file_data_valid_file(tmp_path):
+    def test_fetch_file_data_valid_file(self, tmp_path):
         # Creating a temporary file with some data
         file_content = "This is a test file.\nLine 2.\nLine 3."
         file_path = "./test_data/test_file.txt"  # Constructing the file path
