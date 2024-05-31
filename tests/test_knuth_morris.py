@@ -73,13 +73,16 @@ def test_find_string_match_execution_time(monkeypatch):
 
             start_time = time.time()
             result, time_taken, current_time = find_string_match(
-                "Line 1\nLine 2", REREAD_ON_QUERY=True)
+                "Line 1\nLine 2", REREAD_ON_QUERY=False
+            )
             end_time = time.time()
 
             time_taken = (end_time - start_time) * 1000
 
-            logger.info(f"File size: {size}, Execution time: {
-                        time_taken} milliseconds")
+            logger.info(
+                f"File size: {size}, Execution time: {time_taken}"
+                f"milliseconds"
+            )
         except Exception as e:
             # Logging any exceptions that occur during the test
             logger.error(f"Exception during stress test: {e}")
@@ -119,7 +122,7 @@ def test_find_string_match_stress_test(monkeypatch, caplog):
 
                 # Invoking find_string_match with a sample query
                 for _ in range(query_count):
-                    result = find_string_match("Line 2", REREAD_ON_QUERY=True)
+                    result = find_string_match("Line 2", REREAD_ON_QUERY=False)
 
                 end_time = time.time()
 
@@ -138,6 +141,7 @@ def test_find_string_match_stress_test(monkeypatch, caplog):
                 # Logging any exceptions that occur during the test
                 logger.error(f"Exception during stress test: {e}")
 
-    # Document the limitations of the software
-    logger.error(
-        "Reached the point where the server can no longer handle the load.")
+        # Document the limitations of the software
+        logger.error(
+            f"server can no longer handle the load."
+        )

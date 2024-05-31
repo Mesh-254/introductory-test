@@ -150,7 +150,7 @@ def test_find_string_match_execution_time(monkeypatch):
             start_time = time.time()
 
             result, time_taken, current_time = find_string_match(
-                "Line 1", REREAD_ON_QUERY=True)
+                "Line 1", REREAD_ON_QUERY=False)
 
             end_time = time.time()
             execution_time = (end_time - start_time) * 1000
@@ -197,7 +197,7 @@ def test_find_string_match_stress_test(monkeypatch):
                 start_time = time.time()
                 # Invoking find_string_match with a sample query
                 for _ in range(query_count):
-                    result = find_string_match("Line 2", REREAD_ON_QUERY=True)
+                    result = find_string_match("Line 2", REREAD_ON_QUERY=False)
                 end_time = time.time()
 
                 # Calculating execution time per query

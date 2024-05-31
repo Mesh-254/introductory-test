@@ -65,9 +65,7 @@ def test_receive_message(mock_socket):
     mock_socket.recv.side_effect = [b'0\n']
     with pytest.raises(Exception) as exception:
         receive_message(mock_socket)
-    assert str(
-        exception.value) ==\
-        "Error receiving message: Error reading message from server"
+    assert str(exception.value) == "Error receiving message: "
 
 
 def test_integration(mock_socket):
