@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
 import time
-
+from typing import Tuple
 from src.server import fetch_file_data, read_config
 
 
-def naive_string_match(pattern: str, text: str) -> tuple:
+def naive_string_match(pattern: str, text: str) -> Tuple:
     """
     Performs Naive String Matching to check if
     pattern matches any line in text.
