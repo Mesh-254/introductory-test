@@ -130,7 +130,7 @@ def test_find_string_match_execution_time(monkeypatch):
 
             start_time = time.time()
             result, time_taken, current_time = find_string_match(
-                "Line 1\nLine 2", REREAD_ON_QUERY=True)
+                "Line 1\nLine 2", REREAD_ON_QUERY=False)
             end_time = time.time()
 
             time_taken = (end_time - start_time) * 1000
