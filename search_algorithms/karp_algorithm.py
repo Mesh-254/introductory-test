@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import time
-import sys
 from typing import Tuple
 from src.server import read_config, fetch_file_data
 
@@ -73,17 +72,10 @@ def find_string_match(
     if REREAD_ON_QUERY or file_data is None:
         file_data = fetch_file_data(file_path)
 
-    start_time = time.time()  # Recording the start time of search
-
     # Call karp_rabin_string_match function to search for the pattern in the
     # file data
     result, time_taken, current_time = karp_rabin_string_match(
         message, file_data)
-
-    end_time = time.time()  # Recording the end time
-
-    # Calculating the time taken
-    time_taken = end_time - start_time
 
     # Returning match result, time taken, and timestamp
     return result, time_taken, current_time
