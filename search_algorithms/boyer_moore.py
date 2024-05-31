@@ -11,12 +11,12 @@ def boyer_moore(pattern_lines, text_lines):
 
     Args:
         pattern_lines (List[str]): The lines of the pattern to search for.
-        text_lines (List[str]): The lines of the
-        text containing lines to search.
+        text_lines (List[str]): The lines of the text containing lines to
+        search.
 
     Returns:
-        int: The index of the first occurrence of
-        the pattern in the text, or -1 if not found.
+        int: The index of the first occurrence of the pattern in the text,
+        or -1 if not found.
     """
     pattern_length = len(pattern_lines)  # Get the length of the pattern
     text_length = len(text_lines)  # Get the length of the text
@@ -59,9 +59,9 @@ def find_string_match(
         REREAD_ON_QUERY (bool): Whether to re-read the file on every query.
 
     Returns:
-        tuple: A tuple containing the search result
-        ('STRING EXISTS\n' or 'STRING NOT FOUND\n'),
-        time taken to find the match, and the current timestamp.
+        tuple: A tuple containing the search result ('STRING EXISTS\n' or
+        'STRING NOT FOUND\n'), time taken to find the match, and the current
+        timestamp.
     """
 
     global file_data  # Declare file_data as a global variable
